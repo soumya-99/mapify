@@ -369,9 +369,7 @@ switchThemeBtn.onclick = switchTheme
 
 // Easter Egg
 const easterEggSearch = document.getElementById("easter-egg") as HTMLButtonElement
-easterEggSearch.onclick = () => {
-	easterEgg()
-}
+easterEggSearch.onclick = easterEgg
 
 // work for removing jquery
 const dropdown = document.querySelector(".dropdown-trigger")
