@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./src/ico/tab-ico.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+        content="Mapify Inc. converts any image into map. It supports Material You theming! 6 different custom preset Material You theme. Easter Egg available.">
+    <meta name="theme-color" content="#3367D6">
+  <title>Mapify</title>
+</head>
+
+<body>
+  <div class="navbar-fixed">
+    <nav>
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo">Mapify<sub style="font-size: xx-small;">inc.</sub></a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down" style="display: flex; justify-content: space-around;">
+          <li><a class="waves-effect waves-light blue btn tooltipped hoverable" data-position="bottom"
+              data-tooltip="Source" id="source"><i class="material-icons" id="src-icon">place</i></a></li>
+          <li><a class="waves-effect waves-light green btn tooltipped hoverable" id="dest" data-position="bottom"
+              data-tooltip="Destination"><i class="material-icons" id="dest-icon">pin_drop
+              </i></a></li>
+          <li><a class="waves-effect waves-light red btn tooltipped hoverable" id="sp" data-position="bottom"
+              data-tooltip="Show Path"><i class="material-icons" id="sp-icon">play_circle_outline</i></a>
+          </li>
+          <li><a class="waves-effect waves-light purple btn tooltipped hoverable" id="reset" data-position="bottom"
+              data-tooltip="Reset Map"><i class="material-icons" id="reset-icon">refresh</i></a>
+          </li>
+          <li><a class="waves-effect waves-light indigo modal-trigger btn tooltipped hoverable" id="help" href="#modal1"
+              data-position="bottom" data-tooltip="Help"><i class="material-icons"
+                id="help-icon">import_contacts</i></a>
+          </li>
+          <li><a id="fullscreen" class="waves-effect waves-light orange btn tooltipped hoverable" data-position="bottom"
+              data-tooltip="Fullscreen Mode"><i class="material-icons" id="fullscreen-icon">fullscreen</i></a>
+          </li>
+          <li><a id="zoom" class="waves-effect waves-light amber btn tooltipped hoverable" data-position="bottom"
+              data-tooltip="Toggle Theatre Mode"><i class="material-icons" id="zoom-icon">zoom_in</i></a>
+          </li>
+          <li><a id="download" class="waves-effect waves-light pink btn tooltipped hoverable" data-position="bottom"
+              data-tooltip="Download Map"><i class="material-icons" id="download-icon">download</i></a>
+          </li>
+          <li><a class="waves-effect waves-light cyan accent-3 btn modal-trigger tooltipped hoverable" href="#modal2"
+              data-position="bottom" data-tooltip="Settings"><i class="material-icons"
+                id="settings-icon">settings</i></a>
+          </li>
+          <li>
+            <div class="switch">
+              <label>
+                Light Mode
+                <input id="switch-dark" type="checkbox">
+                <span class="lever"></span>
+                Dark Mode
+              </label>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Modal for User Guide -->
+  <div id="modal1" class="modal">
+    <div class="modal-content">
+      <h4>User Guide</h4>
+      <div class="divider"></div>
+      <h6>N.B. Even you can scroll the map with mouse.</h6>
+      <div class="modal-content-container">
+        <div class="row">
+          <div class="col s7">
+            <ol class="helpText">
+              <li class="src">To add source, please click on the source button and click anywhere on the path!
+              </li>
+              <li class="dest">To add a destination, please click on the destination button and click anywhere
+                on the path!</li>
+              <li class="return">To find your shortest path, please click on the show path button. Make sure
+                you don't forget to add source and destination before!</li>
+              <li class="reset">You can select any location or add your own map using add your map! It's so
+                easy!</li>
+              <li class="toggle">Have you change your mind and wanna go somewhere else? Don't worry! Just
+                click on reset and add new destination keeping all your customization as it is!</li>
+            </ol>
+          </div>
+          <div class="col s5">
+            <lottie-player style="width: 100%; height: 100%;" src="./src/animations/86746-loading-blash.json" autoplay
+              loop></lottie-player>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Good to go</a>
+    </div>
+  </div>
+
+  <!-- Modal for settings -->
+  <div id="modal2" class="modal">
+    <div class="modal-content">
+      <h4>Settings</h4>
+      <div class="divider"></div>
+      <h6>More customizations on the way!</h6>
+      <div class="row">
+        <div class="col s7">
+          <ul class="helpText">
+            <li>
+              <span class="src">Choose Map Path Color</span>
+              <input id="custom-color" type="color" value="#fafafa">
+            </li>
+            <br>
+            <li>
+              <span class="dest">Sensitivity</span>
+              <input type="range" id="sensitivity" min="0" max="20" />
+              <span id="badge-sensitivity" class="badge blue white-text"></span>
+            </li>
+            <br>
+            <li>
+              <span class="return">Path Size</span>
+              <input type="range" id="path-size" min="1" max="5" />
+              <span id="badge-pathSize" class="badge blue white-text"></span>
+            </li>
+          </ul>
+        </div>
+        <div class="col s5">
+          <lottie-player style="width: 100%; height: 100%;" src="./src/animations/92803-loading.json" autoplay loop>
+          </lottie-player>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a onclick="resetAll()" class="modal-close waves-effect waves-red btn-flat">Reset All</a>
+      <a onclick="resetDefault()" class="modal-close waves-effect waves-orange btn-flat">Reset Settings</a>
+      <a onclick="saveSettings()" class="modal-close waves-effect waves-green btn-flat">Save All</a>
+    </div>
+  </div>
+
+  <ul class="sidenav" id="mobile-demo">
+    <li class="sidenav__li">You can't add source/destination without a laptop or computer.</li>
+  </ul>
+
+  <!-- For themeing purpose (in future) -->
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large red tooltipped hoverable" data-position="left" data-tooltip="Theme (Material You)"
+      id="floating-action">
+      <i class="large material-icons">palette</i>
+    </a>
+    <ul>
+      <li id="m-u" style="display: none;"><a
+          class="waves-effect waves-light blue lighten-2 btn-floating tooltipped hoverable pulse" data-position="left"
+          data-tooltip="Love You Infinity!">
+          <material-theme-control></material-theme-control>
+        </a>
+      </li>
+      <li><a class="waves-effect waves-light pink lighten-2 btn-floating tooltipped hoverable" id="m-colorful"
+          data-position="left" data-tooltip="Reset Colorful"><i class="material-icons">refresh</i></a>
+      </li>
+      <li><a class="waves-effect waves-light teal btn-floating tooltipped hoverable" id="m-teal" data-position="left"
+          data-tooltip="Material Teal"><i class="material-icons">album</i></a>
+      </li>
+      <li><a class="waves-effect waves-light purple btn-floating tooltipped hoverable" id="m-purple"
+          data-position="left" data-tooltip="Material Purple"><i class="material-icons">album</i></a>
+      </li>
+      <li><a class="waves-effect waves-light orange btn-floating tooltipped hoverable" id="m-yellow"
+          data-position="left" data-tooltip="Material Yellow"><i class="material-icons">album</i></a>
+      </li>
+      <li><a class="waves-effect waves-light red accent-2 btn-floating tooltipped hoverable" id="m-red"
+          data-position="left" data-tooltip="Material Red"><i class="material-icons">album</i></a></li>
+      <li><a class="waves-effect waves-light green btn-floating tooltipped hoverable" id="m-green" data-position="left"
+          data-tooltip="Material Green"><i class="material-icons">album
+          </i></a></li>
+      <li><a class="waves-effect waves-light blue accent-2 btn-floating tooltipped hoverable" data-position="left"
+          data-tooltip="Material Blue" id="m-blue"><i class="material-icons">album</i></a></li>
+    </ul>
+  </div>
+
+  <!-- Main Body section starts -->
+  <div class="row">
+    <div class="col s7" id="body-left">
+      <div class="map-container" id="map-container">
+        <canvas id="canvas">
+          <img id="map-image" src="./src/maps/Abstract_Maps/absMap3.png" alt="Map Here">
+        </canvas>
+      </div>
+    </div>
+    <div class="col s5" id="body-right">
+      <div class="input-field col s5">
+        <select class="icons" id="mapSelect">
+          <option disabled>Choose Map</option>
+          <option value="./src/maps/Abstract_Maps/absMap3.png" data-icon="./src/maps/Abstract_Maps/absMap3.png"
+            selected>Map 1
+          </option>
+          <option value="./src/maps/Real_Maps/gMaps5.png" data-icon="./src/maps/Real_Maps/gMaps5.png">Map 2</option>
+          <option value="./src/maps/Real_Maps/gMaps6.png" data-icon="./src/maps/Real_Maps/gMaps6.png">Map 3</option>
+          <option value="./src/maps/Real_Maps/gMaps7.png" data-icon="./src/maps/Real_Maps/gMaps7.png">Map 4</option>
+          <option value="./src/maps/Real_Maps/gMaps8.png" data-icon="./src/maps/Real_Maps/gMaps8.png">Map 5</option>
+          <option value="./src/maps/Real_Maps/gMaps9.png" data-icon="./src/maps/Real_Maps/gMaps9.png">Map 6</option>
+          <option value="./src/maps/Industries/indMap1.jpg" data-icon="./src/maps/Industries/indMap1.jpg">Map 7
+          </option>
+          <option value="./src/maps/Industries/indMap2.jpg" data-icon="./src/maps/Industries/indMap2.jpg">Map 8
+          </option>
+          <option value="./src/maps/Industries/indMap3.png" data-icon="./src/maps/Industries/indMap3.png">Map 9
+          </option>
+        </select>
+        <label>Maps in select</label>
+      </div>
+      <div class="input-field col s7">
+        <input pattern="[a-zA-Z ]+" type="text" id="easter" class="validate" />
+        <label for="easter">Quest for INFINITY!</label>
+        <span class="helper-text" data-error="wrong" data-success="right">Easter Egg</span>
+        <button id="easter-egg" type="button" class="btn waves-effect blue accent-2 hoverable right"><i
+            class="material-icons">all_inclusive</i></button>
+      </div>
+
+      <div class="col s10">
+        <div class="file-field input-field">
+          <a id="map-upload-button" class="btn waves-effect">
+            <i class="material-icons left">cloud_upload</i>Add Your Map
+            <input id="input-map" type="file" accept="image/jpeg, image/png, image/jpg, image/webp">
+          </a>
+          <div class="file-path-wrapper">
+            <input class="file-path validate" type="text">
+          </div>
+        </div>
+      </div>
+
+      <div class="carousel">
+        <a class="carousel-item" href="#one!">
+          <div class="card red darken-2" id="card-1">
+            <div class="card-content white-text">
+              <span class="card-title">Your Mapify</span>
+              <div class="divider"></div>
+              <p>Introducing Google's latest Material You. It's all about you. Change the colors, change
+                the themes as you want! We follow how you feel! Make it yours!</p>
+            </div>
+          </div>
+        </a>
+        <a class="carousel-item" href="#two!">
+          <div class="card blue darken-2" id="card-2">
+            <div class="card-content white-text">
+              <span class="card-title">Add Any Map</span>
+              <div class="divider"></div>
+              <p>Your Mapify supports color images, grayscale images, red, white, green paths and many
+                more..! Add any map you want, we got your back!</p>
+            </div>
+          </div>
+        </a>
+        <a class="carousel-item" href="#three!">
+          <div class="card green darken-2" id="card-3">
+            <div class="card-content white-text">
+              <span class="card-title">Stops In The Middle</span>
+              <div class="divider"></div>
+              <p>Got more than one place to visit in a go? Add as many intermediate stops as you need!
+                Mapify will navigate through all!</p>
+            </div>
+          </div>
+        </a>
+        <a class="carousel-item" href="#four!">
+          <div class="card orange darken-2" id="card-4">
+            <div class="card-content white-text">
+              <span class="card-title">Easter Egg</span>
+              <div class="divider"></div>
+              <p>Write a secret word (Related to our app) in the search box, and voila! A limitless visual
+                treat is waiting for you.</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pre-loader">
+    <lottie-player src="./src/animations/51777-infinite-loop-inspired-by-google.json" background="transparent" speed="1"
+      loop autoplay></lottie-player>
+  </div>
+  <footer class="page-footer blue darken-2" id="aboutus">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">About Us</h5>
+          <div class="divider"></div>
+          <p class="white-text text-lighten-4">All rights reserved by <a href="#"
+              style="color: rgb(255, 255, 255);">Soumyadeep Arka Souvik.</a> We've created this website
+            only
+            for Project Purpose. Use of this website's source code without any permission will be marked as
+            an illegal step. Find Us on Google Maps.</p>
+        </div>
+        <div class="col l4 offset-l2 s12">
+          <h5 class="white-text">Links</h5>
+          <div class="divider"></div>
+          <ul>
+            <li><a class="grey-text text-lighten-3" target="_blank"
+                href="https://www.facebook.com/profile.php?id=100056571030622"><button
+                  class="btn waves-effect blue pulse" id="link-fb" href="">Facebook</button></a></li>
+            <br>
+            <li><a class="grey-text text-lighten-3" target="_blank"
+                href="https://www.instagram.com/_s_o_u_v_i_k__m_o_n_d_a_l_/"><button class="btn waves-effect red pulse"
+                  id="link-insta">Instagram</button></a></li>
+            <br>
+            <li><a class="grey-text text-lighten-3" target="_blank" href="https://github.com/soumya-99"><button
+                  class="btn waves-effect green pulse" id="link-github">Github</button></a></li>
+            <br>
+            <li><a class="grey-text text-lighten-3" target="_blank" href="https://twitter.com/Soumyadeep5000"><button
+                  class="btn waves-effect orange pulse" id="link-twitter">Twitter</button></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+        &copy; 2022 Copyright By Mapify Inc.
+        <a class="grey-text text-lighten-4 right" href="./disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+  </footer>
+  <script type="module" src="/src/main.ts" defer></script>
+</body>
+
+</html>
