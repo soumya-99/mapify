@@ -1,3 +1,5 @@
+import { materialYouPathColor } from "./theme"
+
 // image related
 let img = document.getElementById("map-image") as HTMLImageElement
 // let inputImage = document.getElementById("input-map") as HTMLInputElement
@@ -24,7 +26,7 @@ let universalSources: number[] = new Array() //stores values until map is reload
 let universalDests: number[] = new Array()
 let univarsalWaypoints: number[] = new Array()
 // let waypoints: number[] = new Array() //array for multiple stops or way points
-let materialYouPathColor = "ff0000"
+// let materialYouPathColor = "ff0000"
 
 let box_dimensions = 2 //segment dimension
 let maxX = canvas.width / box_dimensions //image loading needs to be done before this
