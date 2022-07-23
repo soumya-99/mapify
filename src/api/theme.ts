@@ -1,4 +1,4 @@
-import "../utils/material-theme-control"
+import { argbFromHex, themeFromSourceColor, applyTheme } from "@material/material-color-utilities"
 import { highLightPath } from "./algorithm"
 
 const floatingActionButton = document.querySelector(".fixed-action-btn") as HTMLDivElement
@@ -91,7 +91,7 @@ const ICONS = [
 ]
 
 let materialYouPathColor = "ff0000"
-const whiteTexts = document.querySelectorAll(".white-text")
+const whiteTexts = Array.from(document.querySelectorAll(".white-text") as unknown as HTMLCollectionOf<HTMLElement>)
 
 const materialColorful = () => {
     localStorage.setItem("theme", "0")
@@ -172,7 +172,7 @@ const materialColorful = () => {
     } else {
         navBar.style.backgroundColor = "rgba(55, 71, 79, 0.6)"
         document.body.style.backgroundImage =
-            "linear-gradient(to left, rgb(216, 237, 255), #90a4ae)"
+            "linear-gradient(to right, #d0dae0, #e2ebf0)"
 
         whiteTexts.forEach((text) => {
             text.removeAttribute("style")
@@ -1113,13 +1113,13 @@ const materialTeal = () => {
 
 // dark mode
 const switchTheme = () => {
-	localStorage.theme === "0" && materialColorfulBtn.click()
-	localStorage.theme === "1" && materialBlueBtn.click()
-	localStorage.theme === "2" && materialGreenBtn.click()
-	localStorage.theme === "3" && materialRedBtn.click()
-	localStorage.theme === "4" && materialYellowBtn.click()
-	localStorage.theme === "5" && materialPurpleBtn.click()
-	localStorage.theme === "6" && materialTealBtn.click()
+    localStorage.theme === "0" && materialColorfulBtn.click()
+    localStorage.theme === "1" && materialBlueBtn.click()
+    localStorage.theme === "2" && materialGreenBtn.click()
+    localStorage.theme === "3" && materialRedBtn.click()
+    localStorage.theme === "4" && materialYellowBtn.click()
+    localStorage.theme === "5" && materialPurpleBtn.click()
+    localStorage.theme === "6" && materialTealBtn.click()
 }
 
 // Easter Egg
@@ -1127,101 +1127,166 @@ const easter = document.getElementById("easter") as HTMLInputElement
 const audio = new Audio("./src/sounds/party-trumpet.wav")
 
 const easterEgg = () => {
-	if (easter.value === "")
-		M.toast({ html: "Write Something First!", classes: "rounded red" })
-	else if (easter.value === "Mapify") {
-		audio.play()
-		easterEggMaterialYou()
-		easter.value = ""
-	} else {
-		M.toast({ html: "Better luck next time!", classes: "rounded orange" })
-		easter.value = ""
-	}
+    if (easter.value === "")
+        M.toast({ html: "Write Something First!", classes: "rounded red" })
+    else if (easter.value === "Mapify") {
+        audio.play()
+        easterEggMaterialYou()
+        easter.value = ""
+    } else {
+        M.toast({ html: "Better luck next time!", classes: "rounded orange" })
+        easter.value = ""
+    }
 }
 
 const materialUActionButton = document.getElementById("m-u") as HTMLLIElement
 
 const easterEggMaterialYou = () => {
-	materialUActionButton.removeAttribute("style")
-	M.toast({
-		html: "Material You Limitless Unlocked! Check Theme Now.",
-		classes: "rounded green",
-		displayLength: 6000,
-	})
+    materialUActionButton.removeAttribute("style")
+    M.toast({
+        html: "Material You Limitless Unlocked! Check Theme Now.",
+        classes: "rounded green",
+        displayLength: 6000,
+    })
 }
 
+const materialColorChooser = document.getElementById("color-you") as HTMLInputElement
+const isDarkModeOnForMaterialYou = document.getElementById("switch-dark-you") as HTMLInputElement
+
+const DEFAULT_LIMITLESS_COLOR = `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`
+const theme = themeFromSourceColor(argbFromHex(DEFAULT_LIMITLESS_COLOR), [
+    {
+        name: "custom-1",
+        value: argbFromHex("#ff0000"),
+        blend: true,
+    },
+]);
+
+const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+applyTheme(theme, { target: document.body, dark: systemTheme })
+
+isDarkModeOnForMaterialYou.addEventListener("input", () => {
+    const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+    applyTheme(theme, { target: document.body, dark: systemTheme })
+})
+
+materialColorChooser.addEventListener("input", () => {
+    const hex = materialColorChooser.value
+    const theme = themeFromSourceColor(argbFromHex(hex), [
+        {
+            name: "custom-2",
+            value: argbFromHex("#ff0000"),
+            blend: true,
+        },
+    ]);
+
+    const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+
+    applyTheme(theme, { target: document.body, dark: systemTheme })
+
+    isDarkModeOnForMaterialYou.addEventListener("input", () => {
+        const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+
+        applyTheme(theme, { target: document.body, dark: systemTheme })
+    })
+
+})
+
+const randomizeButton = document.getElementById("randomize") as HTMLButtonElement
+const randomize = () => {
+    const hex = `#${(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')}`
+    const theme = themeFromSourceColor(argbFromHex(hex), [
+        {
+            name: "custom-3",
+            value: argbFromHex("#ff0000"),
+            blend: true,
+        },
+    ]);
+
+    const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+
+    applyTheme(theme, { target: document.body, dark: systemTheme })
+
+    isDarkModeOnForMaterialYou.addEventListener("input", () => {
+        const systemTheme = isDarkModeOnForMaterialYou.checked ? window.matchMedia("(prefers-color-scheme: dark)").matches : window.matchMedia("(prefers-color-scheme: light)").matches
+
+        applyTheme(theme, { target: document.body, dark: systemTheme })
+    })
+}
+randomizeButton.onclick = randomize
+
 materialUActionButton.onclick = () => {
-	navBar.removeAttribute("style")
-	navBar.style.backgroundColor = `var(--md-sys-color-primary)`
-	navBar.style.opacity = `0.9`
-	document.body.style.background = `var(--md-sys-color-primary-container)`
-	document.body.style.color = `var(--md-sys-color-on-primary-container)`
+    navBar.removeAttribute("style")
+    navBar.style.backgroundColor = `var(--md-sys-color-primary)`
+    navBar.style.opacity = `0.9`
+    document.body.style.background = `var(--md-sys-color-primary-container)`
+    document.body.style.color = `var(--md-sys-color-on-primary-container)`
 
-	COLORS.forEach((color) => {
-		for (let i = 0; i < NAV_BUTTONS.length; i++) {
-			if (
-				NAV_BUTTONS[i].classList.contains(color) ||
-				NAV_BUTTONS[i].classList.contains("lighten-5") ||
-				NAV_BUTTONS[i].classList.contains("darken-4")
-			) {
-				NAV_BUTTONS[i].classList.remove(color)
-				NAV_BUTTONS[i].classList.remove("lighten-5")
-				NAV_BUTTONS[i].classList.remove("darken-4")
-				NAV_BUTTONS[i].removeAttribute("style")
-				NAV_BUTTONS[
-					i
-				].style.backgroundColor = `var(--md-sys-color-primary-container)`
-			}
-		}
+    COLORS.forEach((color) => {
+        for (let i = 0; i < NAV_BUTTONS.length; i++) {
+            if (
+                NAV_BUTTONS[i].classList.contains(color) ||
+                NAV_BUTTONS[i].classList.contains("lighten-5") ||
+                NAV_BUTTONS[i].classList.contains("darken-4")
+            ) {
+                NAV_BUTTONS[i].classList.remove(color)
+                NAV_BUTTONS[i].classList.remove("lighten-5")
+                NAV_BUTTONS[i].classList.remove("darken-4")
+                NAV_BUTTONS[i].removeAttribute("style")
+                NAV_BUTTONS[
+                    i
+                ].style.backgroundColor = `var(--md-sys-color-primary-container)`
+            }
+        }
 
-		ICONS.forEach((icon) => {
-			icon.removeAttribute("style")
-			icon.style.color = `var(--md-sys-color-on-primary-container)`
-		})
+        ICONS.forEach((icon) => {
+            icon.removeAttribute("style")
+            icon.style.color = `var(--md-sys-color-on-primary-container)`
+        })
 
-		for (let i = 0; i < CARDS.length; i++) {
-			if (CARDS[i].classList.contains(color)) {
-				CARDS[i].classList.remove(color)
-				CARDS[i].removeAttribute("style")
-			}
-			CARDS[i].style.backgroundColor = `var(--md-sys-color-tertiary)`
-		}
+        for (let i = 0; i < CARDS.length; i++) {
+            if (CARDS[i].classList.contains(color)) {
+                CARDS[i].classList.remove(color)
+                CARDS[i].removeAttribute("style")
+            }
+            CARDS[i].style.backgroundColor = `var(--md-sys-color-tertiary)`
+        }
 
-		if (footer.classList.contains(color)) {
-			footer.classList.remove(color)
-		}
-		footer.style.backgroundColor = `var(--md-sys-color-on-primary-container)`
-		whiteTexts.forEach((text) => {
-			text.removeAttribute("style")
-			text.classList.remove("white-text")
-			// text.style.color = `var(--md-sys-color-primary-container)`
-		})
+        if (footer.classList.contains(color)) {
+            footer.classList.remove(color)
+        }
+        footer.style.backgroundColor = `var(--md-sys-color-on-primary-container)`
+        whiteTexts.forEach((text) => {
+            text.removeAttribute("style")
+            text.classList.remove("white-text")
+            text.style.color = `var(--md-sys-color-primary-container)`
+        })
 
-		for (let i = 0; i < SOCIAL_BUTTONS.length; i++) {
-			if (
-				SOCIAL_BUTTONS[i].classList.contains(color) ||
-				SOCIAL_BUTTONS[i].classList.contains("lighten-5") ||
-				SOCIAL_BUTTONS[i].classList.contains("darken-4")
-			) {
-				SOCIAL_BUTTONS[i].classList.remove(color)
-				SOCIAL_BUTTONS[i].classList.remove("lighten-5")
-				SOCIAL_BUTTONS[i].classList.remove("darken-4")
-				SOCIAL_BUTTONS[i].removeAttribute("style")
-				SOCIAL_BUTTONS[
-					i
-				].style.backgroundColor = `var(--md-sys-color-tertiary-container)`
-				SOCIAL_BUTTONS[
-					i
-				].style.color = `var(--md-sys-color-on-tertiary-container)`
-			}
-			SOCIAL_BUTTONS[
-				i
-			].style.backgroundColor = `var(--md-sys-color-tertiary-container)`
-			SOCIAL_BUTTONS[
-				i
-			].style.color = `var(--md-sys-color-on-tertiary-container)`
-		}
-	})
+        for (let i = 0; i < SOCIAL_BUTTONS.length; i++) {
+            if (
+                SOCIAL_BUTTONS[i].classList.contains(color) ||
+                SOCIAL_BUTTONS[i].classList.contains("lighten-5") ||
+                SOCIAL_BUTTONS[i].classList.contains("darken-4")
+            ) {
+                SOCIAL_BUTTONS[i].classList.remove(color)
+                SOCIAL_BUTTONS[i].classList.remove("lighten-5")
+                SOCIAL_BUTTONS[i].classList.remove("darken-4")
+                SOCIAL_BUTTONS[i].removeAttribute("style")
+                SOCIAL_BUTTONS[
+                    i
+                ].style.backgroundColor = `var(--md-sys-color-tertiary-container)`
+                SOCIAL_BUTTONS[
+                    i
+                ].style.color = `var(--md-sys-color-on-tertiary-container)`
+            }
+            SOCIAL_BUTTONS[
+                i
+            ].style.backgroundColor = `var(--md-sys-color-tertiary-container)`
+            SOCIAL_BUTTONS[
+                i
+            ].style.color = `var(--md-sys-color-on-tertiary-container)`
+        }
+    })
 }
 
 export {

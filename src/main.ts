@@ -379,7 +379,7 @@ const carousel = document.querySelector(".carousel") as Element
 const carouselInstance = M.Carousel.init(carousel)
 setInterval(() => {
 	carouselInstance.next()
-}, 3700)
+}, 3900)
 
 // preloader done
 const preloader = document.querySelector(".pre-loader") as any

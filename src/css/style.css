@@ -216,7 +216,8 @@ lottie-player {
 }
 
 #modal1,
-#modal2 {
+#modal2,
+#modal3 {
 	border-radius: 40px !important;
 	background-color: rgba(248, 248, 248, 0.589) !important;
 	backdrop-filter: blur(6px) !important;

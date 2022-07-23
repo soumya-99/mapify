@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="./src/ico/tab-ico.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-        content="Mapify Inc. converts any image into map. It supports Material You theming! 6 different custom preset Material You theme. Easter Egg available.">
-    <meta name="theme-color" content="#3367D6">
+    content="Mapify Inc. converts any image into map. It supports Material You theming! 6 different custom preset Material You theme. Easter Egg available.">
+  <meta name="theme-color" content="#3367D6">
   <title>Mapify</title>
 </head>
 
@@ -135,6 +135,52 @@
     </div>
   </div>
 
+  <!-- Modal for Material You Limitless -->
+  <div id="modal3" class="modal">
+    <div class="modal-content">
+      <h4>Material You Limitless</h4>
+      <div class="divider"></div>
+      <h6>Your own Mapify with Material Design 3 (Material You)!</h6>
+      <div class="row">
+        <div class="col s7">
+          <ul class="helpText">
+            <li>
+              <span class="src">Choose Any Color</span>
+              <input id="color-you" type="color" value="#fafafa">
+            </li>
+            <br>
+            <li>
+              <span class="dest">Toggle Dark Mode</span>
+              <div class="switch">
+                <label>
+                  Light Mode
+                  <input id="switch-dark-you" type="checkbox">
+                  <span class="lever"></span>
+                  Dark Mode
+                </label>
+              </div>
+            </li>
+            <br>
+            <li>
+              <span class="return">I'm feeling lucky!</span>
+              <br>
+              <div>
+                <button class="btn orange hoverable" id="randomize">Randomize</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="col s5">
+          <lottie-player style="width: 90%; height: 90%;" src="./src/animations/110955-rocket-launch-animation-space-exploration.json" speed="1" autoplay loop>
+          </lottie-player>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a href="#" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
+
   <ul class="sidenav" id="mobile-demo">
     <li class="sidenav__li">You can't add source/destination without a laptop or computer.</li>
   </ul>
@@ -146,10 +192,11 @@
       <i class="large material-icons">palette</i>
     </a>
     <ul>
-      <li id="m-u" style="display: none;"><a
-          class="waves-effect waves-light blue lighten-2 btn-floating tooltipped hoverable pulse" data-position="left"
-          data-tooltip="Love You Infinity!">
-          <material-theme-control></material-theme-control>
+      <li id="m-u" style="display: none;"><a href="#modal3"
+          class="waves-effect waves-light blue lighten-2 btn-floating modal-trigger tooltipped hoverable pulse"
+          data-position="left" data-tooltip="Love You Infinity!">
+          <i class="material-icons">palette</i>
+          <!-- <material-theme-control></material-theme-control> -->
         </a>
       </li>
       <li><a class="waves-effect waves-light pink lighten-2 btn-floating tooltipped hoverable" id="m-colorful"
