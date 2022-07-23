@@ -4,6 +4,7 @@ import "materialize-css/dist/css/materialize.min.css";
 import "./css/material-icons.css";
 import "./css/style.css";
 import { easterEgg, materialBlue, materialColorful, materialGreen, materialPurple, materialRed, materialTeal, materialYellow, switchTheme } from "./api/theme";
+import { bfsManager, colorImagePixels, compareColorValues, findVertexAtCoordinate } from "./api/algorithm";
 
 // buttons
 const srcButton = document.getElementById("source") as HTMLAnchorElement

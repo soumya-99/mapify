@@ -1,15 +1,49 @@
+// image related
+let img = document.getElementById("map-image") as HTMLImageElement
+// let inputImage = document.getElementById("input-map") as HTMLInputElement
+let customImageInput: HTMLImageElement
+let customInputEnabled = false
+
+
+let canvas = document.getElementById("canvas") as HTMLCanvasElement
+canvas.width = img.width
+canvas.height = img.height
+let context = canvas.getContext("2d") as CanvasRenderingContext2D
+
+
+// algo related
+// let sourceSet = false, //flags for source and dest button
+// 	destSet = false
+// let srcButtonOn = false, //state of buttons
+// 	destButtonOn = false
+let isReset = true //for realtime updation of pathSize
+//used as a flag if in reset state or not
+// let source: number
+// let destination: number
+let universalSources: number[] = new Array() //stores values until map is reloaded or changes
+let universalDests: number[] = new Array()
+let univarsalWaypoints: number[] = new Array()
+// let waypoints: number[] = new Array() //array for multiple stops or way points
+let materialYouPathColor = "ff0000"
+
+let box_dimensions = 2 //segment dimension
+let maxX = canvas.width / box_dimensions //image loading needs to be done before this
+let maxY = canvas.height / box_dimensions //cause accessing the canvas element here
+let vertex = maxX * maxY //maximum possible number of veritces
+
+
 //These needs to be global to preseve states within function calls
-let predFromSource = new Map()
-let predFromDest = new Map()
+let predFromSource: Map<number, number> = new Map()
+let predFromDest: Map<number, number> = new Map()
 let sourceQueue = new Array()
 let destQueue = new Array()
 let sourceVisited = new Array(vertex).fill(false)
 let destVisited = new Array(vertex).fill(false)
 let universalPaths = new Array() //not resets until reset button or swap map pressed
-let pathColor //to support materialYou path color
+let pathColor: string //to support materialYou path color
 let copyOfWaypoints = new Array() //copy to manage realtime pathSize update for waypoints
 
-function bfsManager(source, destination, waypoints) {
+function bfsManager(source: number, destination: number, waypoints: number[]) {
 	//handles the case for multiple way points
 	//fetching data from map.js
 
@@ -46,7 +80,7 @@ function bfsManager(source, destination, waypoints) {
 	BfsSingleRun(currentSource, currDestination)
 }
 
-function BfsSingleRun(currentSource, currDestination) {
+function BfsSingleRun(currentSource: number, currDestination: number) {
 	//handles bidirection BFS
 	//in turn calls SourceBFS() and destBFS()
 
@@ -121,7 +155,7 @@ function destBfs() {
 	return -1
 }
 
-function getN8Adjacents(currItem, boxPixlX, boxPixlY) {
+function getN8Adjacents(currItem: number, boxPixlX: number, boxPixlY: number) {
 	let queueTemp = new Array()
 	///now determine n8 adjacents of x
 	//up
@@ -192,19 +226,19 @@ function getN8Adjacents(currItem, boxPixlX, boxPixlY) {
 	return queueTemp
 }
 
-function getPath(sourceFlag, destFlag) {
+function getPath(sourceFlag: number, destFlag: number) {
 	let temp = new Array()
 
 	let index = sourceFlag > destFlag ? sourceFlag : destFlag
 	while (predFromSource.has(index) === true) {
-		let curr = predFromSource.get(index)
+		let curr = predFromSource.get(index) as number
 		temp.push(curr)
 		index = curr
 	}
 
 	index = sourceFlag > destFlag ? sourceFlag : destFlag
 	while (predFromDest.has(index) === true) {
-		let curr = predFromDest.get(index)
+		let curr = predFromDest.get(index) as number
 		temp.push(curr)
 		index = curr
 	}
@@ -213,31 +247,31 @@ function getPath(sourceFlag, destFlag) {
 
 function highLightPath() {
 	let pathColor = materialYouPathColor
-	const pathWidth = parseInt(pathSize)
+	const pathWidth = pathSize // removed the parseInt
 	for (let p = 0; p < universalPaths.length; p++) {
 		let coords = findCoordinateOfVertex(universalPaths[p])
 		colorImagePixels(
 			coords[0],
 			coords[1],
 			pathWidth,
-			hexToRgb(pathColor).r,
-			hexToRgb(pathColor).g,
-			hexToRgb(pathColor).b
+			hexToRgb(pathColor)?.r as number,
+			hexToRgb(pathColor)?.g as number,
+			hexToRgb(pathColor)?.b as number
 		)
 	}
 }
 
 // path size
-const pathSizeElement = document.getElementById("path-size")
-const badgePathSize = document.getElementById("badge-pathSize")
+const pathSizeElement = document.getElementById("path-size") as HTMLInputElement
+const badgePathSize = document.getElementById("badge-pathSize") as HTMLSpanElement
 
 let pathSize = 1 //default values
-pathSizeElement.value = pathSize
-badgePathSize.innerHTML = pathSize
+pathSizeElement.value = pathSize.toString()
+badgePathSize.innerHTML = pathSize.toString()
 
 pathSizeElement.addEventListener("input", (e) => {
-	pathSize = e.target.value
-	badgePathSize.innerHTML = pathSize
+	pathSize = (e.target as HTMLInputElement).value as unknown as number
+	badgePathSize.innerHTML = pathSize.toString()
 	redrawPath() //reloads the image and redraws the path with new pathsize
 })
 
@@ -246,9 +280,9 @@ function redrawPath() {
 	if (isReset == true) return //not the condition for redrawing
 
 	//clear the image and then in onload redraw the src and dest and.... path
-	let img = document.getElementById("map-image")
-	let tempCustomImage = document.getElementById("map-image")
-	let newImage = document.getElementById("mapSelect")
+	let img = document.getElementById("map-image") as HTMLImageElement
+	let tempCustomImage = document.getElementById("map-image") as HTMLImageElement
+	let newImage = document.getElementById("mapSelect") as HTMLSelectElement
 	if (customInputEnabled === true) {
 		tempCustomImage.src = customImageInput.src
 		canvas.width = customImageInput.width
@@ -292,6 +326,7 @@ function reDrawSrcDest() {
 	}
 }
 
+let wayPointCoord: number[]
 function reDrawStops() {
 	for (let i = 0; i < copyOfWaypoints.length; i++) {
 		wayPointCoord = findCoordinateOfVertex(copyOfWaypoints[i])
@@ -300,7 +335,8 @@ function reDrawStops() {
 }
 
 //creates a colored box to the given coordinate with given boxSize and rgb values
-function colorImagePixels(x, y, size, colorR, colorG, colorB) {
+let pixel: ImageData
+function colorImagePixels(x: number, y: number, size: number, colorR: number, colorG: number, colorB: number) {
 	let xLow = x - size
 	let xHigh = x + size
 	let yLow = y - size
@@ -318,18 +354,18 @@ function colorImagePixels(x, y, size, colorR, colorG, colorB) {
 }
 
 // custom color (color picker)
-const newColor = document.getElementById("custom-color")
-let red = hexToRgb(newColor.value).r
-let green = hexToRgb(newColor.value).g
-let blue = hexToRgb(newColor.value).b
-const settingsIcon = document.getElementById("settings-icon")
+const newColor = document.getElementById("custom-color") as HTMLInputElement
+let red = hexToRgb(newColor.value)?.r as number
+let green = hexToRgb(newColor.value)?.g as number
+let blue = hexToRgb(newColor.value)?.b as number
+const settingsIcon = document.getElementById("settings-icon") as HTMLElement
 
 newColor.addEventListener("input", (e) => {
-	newColor.value = e.target.value
-	red = hexToRgb(e.target.value).r
-	green = hexToRgb(e.target.value).g
-	blue = hexToRgb(e.target.value).b
-	settingsIcon.style.color = e.target.value
+	newColor.value = (e.target as HTMLInputElement).value
+	red = hexToRgb((e.target as HTMLInputElement).value)?.r as number
+	green = hexToRgb((e.target as HTMLInputElement).value)?.g as number
+	blue = hexToRgb((e.target as HTMLInputElement).value)?.b as number
+	settingsIcon.style.color = (e.target as HTMLInputElement).value
 })
 
 function saveSettings() {
@@ -339,18 +375,18 @@ function saveSettings() {
 function resetDefault() {
 	if (confirm("Are you sure? All your changes will be lost.")) {
 		newColor.value = "#fafafa"
-		red = hexToRgb(newColor.value).r
-		green = hexToRgb(newColor.value).g
-		blue = hexToRgb(newColor.value).b
+		red = hexToRgb(newColor.value)?.r as number
+		green = hexToRgb(newColor.value)?.g as number
+		blue = hexToRgb(newColor.value)?.b as number
 		settingsIcon.style.color = newColor.value
 
 		pathSize = 1
-		pathSizeElement.value = pathSize
-		badgePathSize.innerText = pathSize
+		pathSizeElement.value = pathSize.toString()
+		badgePathSize.innerText = pathSize.toString()
 
 		sensitivity = 5
-		sensitivityRange.value = sensitivity
-		badgeSensitivity.innerText = sensitivity
+		sensitivityRange.value = sensitivity.toString()
+		badgeSensitivity.innerText = sensitivity.toString()
 
 		M.toast({
 			html: "Settings reset to default",
@@ -385,18 +421,18 @@ function resetAll() {
 
 // sensitivity controller
 let sensitivity = 5
-const sensitivityRange = document.getElementById("sensitivity")
-const badgeSensitivity = document.getElementById("badge-sensitivity")
-sensitivityRange.value = sensitivity
-badgeSensitivity.innerText = sensitivity
+const sensitivityRange = document.getElementById("sensitivity") as HTMLInputElement
+const badgeSensitivity = document.getElementById("badge-sensitivity") as HTMLSpanElement
+sensitivityRange.value = sensitivity.toString()
+badgeSensitivity.innerText = sensitivity.toString()
 
 sensitivityRange.addEventListener("input", (e) => {
-	sensitivity = e.target.value
-	badgeSensitivity.innerText = sensitivity
+	sensitivity = (e.target as HTMLInputElement).value as unknown as number
+	badgeSensitivity.innerText = sensitivity.toString()
 })
 
 //to compare two color values
-function compareColorValues(x, y, currentPathColor) {
+function compareColorValues(x: number, y: number, currentPathColor: string) {
 	pixel = context.getImageData(x, y, 1, 1)
 	if (
 		//comparing a range of colours
@@ -410,9 +446,9 @@ function compareColorValues(x, y, currentPathColor) {
 		return true
 	//support to ignore previously drawn paths
 	else if (
-		pixel.data[0] === hexToRgb(currentPathColor).r &&
-		pixel.data[1] === hexToRgb(currentPathColor).g &&
-		pixel.data[2] === hexToRgb(currentPathColor).b
+		pixel.data[0] === hexToRgb(currentPathColor)?.r &&
+		pixel.data[1] === hexToRgb(currentPathColor)?.g &&
+		pixel.data[2] === hexToRgb(currentPathColor)?.b
 	)
 		return true
 	//support for pure blue and pure green for source and dest markers
@@ -426,7 +462,7 @@ function compareColorValues(x, y, currentPathColor) {
 	else return false
 }
 
-function findVertexAtCoordinate(x, y) {
+function findVertexAtCoordinate(x: number, y: number) {
 	//find the logical vertex number from the coordinates
 	let boxJ = Math.trunc(x / box_dimensions)
 	let boxI = Math.trunc(y / box_dimensions)
@@ -434,7 +470,7 @@ function findVertexAtCoordinate(x, y) {
 	return hotCell
 }
 
-function findCoordinateOfVertex(vertexNumber) {
+function findCoordinateOfVertex(vertexNumber: number) {
 	//find the coordinates from the logical vertex number
 	let currCell = vertexNumber
 	let i = Math.trunc(currCell / maxX)
@@ -444,14 +480,14 @@ function findCoordinateOfVertex(vertexNumber) {
 	return [x, y]
 }
 
-function hexToRgb(hex) {
+function hexToRgb(hex: string) {
 	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
 	return result
 		? {
-				r: parseInt(result[1], 16),
-				g: parseInt(result[2], 16),
-				b: parseInt(result[3], 16),
-		  }
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16),
+		}
 		: null
 }
 
@@ -463,4 +499,13 @@ function resetBfsManagerStates() {
 	destQueue = new Array()
 	sourceVisited = new Array(vertex).fill(false)
 	destVisited = new Array(vertex).fill(false)
+}
+
+export {
+	// methods
+	highLightPath,
+	colorImagePixels,
+	findVertexAtCoordinate,
+	compareColorValues,
+	bfsManager,
 }

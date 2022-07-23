@@ -1,4 +1,5 @@
 import "../utils/material-theme-control"
+import { highLightPath } from "./algorithm"
 
 const floatingActionButton = document.querySelector(".fixed-action-btn") as HTMLDivElement
 const floatingButton = document.getElementById("floating-action") as HTMLAnchorElement
