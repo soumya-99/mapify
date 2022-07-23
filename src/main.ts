@@ -372,42 +372,14 @@ switchThemeBtn.onclick = switchTheme
 const easterEggSearch = document.getElementById("easter-egg") as HTMLButtonElement
 easterEggSearch.onclick = easterEgg
 
-// work for removing jquery
-const dropdown = document.querySelector(".dropdown-trigger")
-const modal = document.querySelectorAll(".modal")
-const formSelect = document.querySelectorAll("select")
-const tooltip = document.querySelectorAll(".tooltipped")
-const floatingActionButton = document.querySelector(".fixed-action-btn") as HTMLDivElement
-const sideNav = document.querySelector(".sidenav")
-const carousel = document.querySelector(".carousel")
-const tabs = document.querySelector(".tabs")
+// Initialization of MaterializeCSS
+M.AutoInit()
 
-// Don't change the order of the following elements
-const instanceActions: any[] = [
-	dropdown,
-	modal,
-	formSelect,
-	tooltip,
-	floatingActionButton,
-	sideNav,
-	carousel,
-	tabs,
-]
-
-for (let i = 0; i < instanceActions.length; i++) {
-	M.Dropdown.init(instanceActions[0])
-	M.Modal.init(instanceActions[1])
-	M.FormSelect.init(instanceActions[2])
-	M.Tooltip.init(instanceActions[3])
-	M.FloatingActionButton.init(instanceActions[4])
-	M.Sidenav.init(instanceActions[5])
-	M.Tabs.init(instanceActions[7])
-
-	const carouselInstance = M.Carousel.init(instanceActions[6])
-	setInterval(() => {
-		carouselInstance.next()
-	}, 3700)
-}
+const carousel = document.querySelector(".carousel") as Element
+const carouselInstance = M.Carousel.init(carousel)
+setInterval(() => {
+	carouselInstance.next()
+}, 3700)
 
 // preloader done
 const preloader = document.querySelector(".pre-loader") as any
