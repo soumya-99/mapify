@@ -4,7 +4,10 @@ import "materialize-css/dist/css/materialize.min.css";
 import "./css/material-icons.css";
 import "./css/style.css";
 import { easterEgg, materialBlue, materialColorful, materialGreen, materialPurple, materialRed, materialTeal, materialYellow, switchTheme } from "./api/theme";
-import { bfsManager, colorImagePixels, compareColorValues, findVertexAtCoordinate } from "./api/algorithm";
+//import { bfsManager, colorImagePixels, compareColorValues, findVertexAtCoordinate } from "./api/algorithm";
+import { set_box_dimensions, set_maxX, findVertexAtCoordinate, findCoordinateOfVertex, hexToRgb } from "./api/utils";
+import { set_context, colorImagePixels, reDrawSrcDest, reDrawStops, set_universalSources, set_universalDests,
+    set_copyOfWaypoints } from "./api/utils";
 
 // buttons
 const srcButton = document.getElementById("source") as HTMLAnchorElement
@@ -122,6 +125,9 @@ function pick(event: MouseEvent) {
 		return //don't let add src or dest outside paths
 	}
 
+	//passing context to utils
+	set_context(context)
+
 	let hotCell = findVertexAtCoordinate(mx, my)
 
 	if (destSet === false && destButtonOn === true) {
@@ -238,6 +244,10 @@ resetButton.onclick = () => {
 }
 
 function resetStates() {
+	//passing data to utils.ts
+	set_box_dimensions(box_dimensions)
+	set_maxX(maxX)
+
 	predFromSource.clear()
 	predFromDest.clear()
 	sourceQueue = new Array()
@@ -344,6 +354,444 @@ canvas.addEventListener(
 	},
 	false
 )
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////complete messed up algorithm code///////////////////////////
+
+//These needs to be global to preseve states within function calls
+let predFromSource: Map<number, number> = new Map()
+let predFromDest: Map<number, number> = new Map()
+let sourceQueue = new Array()
+let destQueue = new Array()
+let sourceVisited = new Array(vertex).fill(false)
+let destVisited = new Array(vertex).fill(false)
+let universalPaths = new Array() //not resets until reset button or swap map pressed
+let pathColor: string //to support materialYou path color
+let copyOfWaypoints = new Array() //copy to manage realtime pathSize update for waypoints
+
+function bfsManager(source: number, destination: number, waypoints: number[]) {
+	//handles the case for multiple way points
+	//fetching data from map.js
+
+	let BfsSource = source
+	let BfsDestination = destination
+	let interMediatePoints = new Array()
+	interMediatePoints.push(...waypoints)
+	copyOfWaypoints = univarsalWaypoints
+	pathColor = materialYouPathColor
+
+	if (interMediatePoints.length === 0) {
+		//if there's no intermediate points
+		BfsSingleRun(BfsSource, BfsDestination)
+		return
+	}
+
+	//for the first iteration
+	let currentSource = BfsSource
+	let currDestination = interMediatePoints[0]
+	BfsSingleRun(currentSource, currDestination)
+	//for all way points in between
+	for (let i = 1; i < interMediatePoints.length; i++) {
+		//run bfs until all waypoints are visited
+		//manage source and dest for each way points
+		currentSource = currDestination
+		currDestination = interMediatePoints[i]
+		resetBfsManagerStates() //clearing states for re-execution
+		BfsSingleRun(currentSource, currDestination)
+	}
+	//for last iteration
+	currentSource = currDestination
+	currDestination = BfsDestination
+	resetBfsManagerStates()
+	BfsSingleRun(currentSource, currDestination)
+}
+
+function BfsSingleRun(currentSource: number, currDestination: number) {
+	//handles bidirection BFS
+	//in turn calls SourceBFS() and destBFS()
+
+	sourceVisited[currentSource] = true
+	sourceQueue.push(currentSource)
+
+	destVisited[currDestination] = true
+	destQueue.push(currDestination)
+
+	let sourceBfsFlag = -1,
+		destBfsFlag = -1 //states of each bfs call
+	while (sourceBfsFlag === -1 && destBfsFlag === -1) {
+		//will return values != -1 if ended somehow (path found/not found)
+		sourceBfsFlag = sourceBfs()
+		destBfsFlag = destBfs()
+	} //these flags will contain the meeting point
+
+	let currentPath = getPath(sourceBfsFlag, destBfsFlag) //reconstruct the shortest path
+	if (currentPath.length === 0)
+		M.toast({ html: "No path exists in between", classes: "rounded" })
+	else {
+		universalPaths.push(...currentPath)
+		highLightPath() //draw the path on the map
+	}
+}
+
+function sourceBfs() {
+	if (sourceQueue.length === 0) return 0
+
+	let x = sourceQueue.shift() // already popped front
+	x = Math.trunc(x)
+	let coords = findCoordinateOfVertex(x)
+	let boxPixlX = coords[0]
+	let boxPixlY = coords[1]
+	let queueTemp = getN8Adjacents(x, boxPixlX, boxPixlY) //returns N8 adjacents
+
+	//now all the adjacents of x are in queueTemp and can be used
+	//as an alternative of any supporting data structure for bfs.
+	for (let k = 0; k < queueTemp.length; k++) {
+		let vNum = queueTemp[k]
+		if (sourceVisited[vNum] === false) {
+			sourceVisited[vNum] = true
+			sourceQueue.push(vNum)
+			predFromSource.set(vNum, x)
+			if (predFromDest.has(vNum) === true) return vNum
+		}
+	}
+	return -1
+}
+
+function destBfs() {
+	if (destQueue.length === 0) return 0
+
+	let x = destQueue.shift() // already popped front
+	x = Math.trunc(x)
+	let coords = findCoordinateOfVertex(x)
+	let boxPixlX = coords[0]
+	let boxPixlY = coords[1]
+	let queueTemp = getN8Adjacents(x, boxPixlX, boxPixlY) //returns N8 adjacents
+
+	//now all the adjacents of x are in queueTemp and can be used
+	//as an alternative of any supporting data structure for bfs.
+	for (let k = 0; k < queueTemp.length; k++) {
+		let vNum = queueTemp[k]
+		if (destVisited[vNum] === false) {
+			destVisited[vNum] = true
+			destQueue.push(vNum)
+			predFromDest.set(vNum, x)
+			if (predFromSource.has(vNum) === true) return vNum
+		}
+	}
+	return -1
+}
+
+function getN8Adjacents(currItem: number, boxPixlX: number, boxPixlY: number) {
+	let queueTemp = new Array()
+	///now determine n8 adjacents of x
+	//up
+	let upPixlX = boxPixlX
+	let upPixlY = boxPixlY - box_dimensions
+	if (upPixlY > 0) {
+		if (compareColorValues(upPixlX, upPixlY, pathColor)) {
+			queueTemp.push(currItem - maxX)
+		}
+	}
+	//left
+	let leftPixX = boxPixlX - box_dimensions
+	let leftPixY = boxPixlY
+	if (leftPixX > 0) {
+		if (compareColorValues(leftPixX, leftPixY, pathColor)) {
+			queueTemp.push(currItem - 1)
+		}
+	}
+	//right
+	let rightPixX = boxPixlX + box_dimensions
+	let rightPixY = boxPixlY
+	if (rightPixX < canvas.width) {
+		if (compareColorValues(rightPixX, rightPixY, pathColor)) {
+			queueTemp.push(currItem + 1)
+		}
+	}
+	//bottom
+	let bottomPixX = boxPixlX
+	let bottomPixY = boxPixlY + box_dimensions
+	if (bottomPixY < canvas.height) {
+		if (compareColorValues(bottomPixX, bottomPixY, pathColor)) {
+			queueTemp.push(currItem + maxX)
+		}
+	}
+
+	//top left
+	let topleftPixX = boxPixlX - box_dimensions
+	let topleftPixY = boxPixlY - box_dimensions
+	if (topleftPixX > 0 && topleftPixY > 0) {
+		if (compareColorValues(topleftPixX, topleftPixY, pathColor)) {
+			queueTemp.push(currItem - maxX - 1)
+		}
+	}
+	//top right
+	let toprightPixX = boxPixlX + box_dimensions
+	let toprightPixY = boxPixlY - box_dimensions
+	if (toprightPixX < canvas.width && toprightPixY > 0) {
+		if (compareColorValues(toprightPixX, toprightPixY, pathColor)) {
+			queueTemp.push(currItem - maxX + 1)
+		}
+	}
+	//bottom left
+	let bottomleftPixX = boxPixlX - box_dimensions
+	let bottomleftPixY = boxPixlY + box_dimensions
+	if (bottomleftPixX > 0 && bottomleftPixY < canvas.height) {
+		if (compareColorValues(bottomleftPixX, bottomleftPixY, pathColor)) {
+			queueTemp.push(currItem + maxX - 1)
+		}
+	}
+	//bottom right
+	let bottomrightPixX = boxPixlX + box_dimensions
+	let bottomrightPixY = boxPixlY + box_dimensions
+	if (bottomrightPixX < canvas.width && bottomrightPixY < canvas.height) {
+		if (compareColorValues(bottomrightPixX, bottomrightPixY, pathColor)) {
+			queueTemp.push(currItem + maxX + 1)
+		}
+	}
+	return queueTemp
+}
+
+function getPath(sourceFlag: number, destFlag: number) {
+	let temp = new Array()
+
+	let index = sourceFlag > destFlag ? sourceFlag : destFlag
+	while (predFromSource.has(index) === true) {
+		let curr = predFromSource.get(index) as number
+		temp.push(curr)
+		index = curr
+	}
+
+	index = sourceFlag > destFlag ? sourceFlag : destFlag
+	while (predFromDest.has(index) === true) {
+		let curr = predFromDest.get(index) as number
+		temp.push(curr)
+		index = curr
+	}
+	return temp
+}
+
+function highLightPath() {
+	let pathColor = materialYouPathColor
+	const pathWidth = pathSize // removed the parseInt
+
+	//passing context to utils
+	set_context(context)
+
+	for (let p = 0; p < universalPaths.length; p++) {
+		let coords = findCoordinateOfVertex(universalPaths[p])
+		colorImagePixels(
+			coords[0],
+			coords[1],
+			pathWidth,
+			hexToRgb(pathColor)?.r as number,
+			hexToRgb(pathColor)?.g as number,
+			hexToRgb(pathColor)?.b as number
+		)
+	}
+}
+
+// path size
+const pathSizeElement = document.getElementById("path-size") as HTMLInputElement
+const badgePathSize = document.getElementById("badge-pathSize") as HTMLSpanElement
+
+let pathSize = 1 //default values
+pathSizeElement.value = pathSize.toString()
+badgePathSize.innerHTML = pathSize.toString()
+
+pathSizeElement.addEventListener("input", (e) => {
+	pathSize = (e.target as HTMLInputElement).value as unknown as number
+	badgePathSize.innerHTML = pathSize.toString()
+	redrawPath() //reloads the image and redraws the path with new pathsize
+})
+
+function redrawPath() {
+	//handles realtime pathSize updation
+	if (isReset == true) return //not the condition for redrawing
+
+	//passing data to utils.ts
+	set_universalSources(universalSources)
+	set_universalDests(universalDests)
+	set_copyOfWaypoints(copyOfWaypoints)
+
+
+	//clear the image and then in onload redraw the src and dest and.... path
+	let img = document.getElementById("map-image") as HTMLImageElement
+	let tempCustomImage = document.getElementById("map-image") as HTMLImageElement
+	let newImage = document.getElementById("mapSelect") as HTMLSelectElement
+	if (customInputEnabled === true) {
+		tempCustomImage.src = customImageInput.src
+		canvas.width = customImageInput.width
+		canvas.height = customImageInput.height
+		tempCustomImage.onload = () => {
+			context.drawImage(
+				tempCustomImage,
+				0,
+				0,
+				customImageInput.width,
+				customImageInput.height
+			)
+			highLightPath()
+			reDrawSrcDest()
+			reDrawStops()
+		}
+	} else {
+		img.src = newImage.value
+		canvas.width = img.width
+		canvas.height = img.height
+		img.onload = () => {
+			context.drawImage(img, 0, 0, img.width, img.height)
+			highLightPath()
+			reDrawSrcDest()
+			reDrawStops()
+		}
+	}
+}
+
+////////////////////////utility functions/////////////////
+
+
+
+
+// custom color (color picker)
+const newColor = document.getElementById("custom-color") as HTMLInputElement
+let red = hexToRgb(newColor.value)?.r as number
+let green = hexToRgb(newColor.value)?.g as number
+let blue = hexToRgb(newColor.value)?.b as number
+//const settingsIcon = document.getElementById("settings-icon") as HTMLElement
+
+// newColor.addEventListener("input", (e) => {
+// 	newColor.value = (e.target as HTMLInputElement).value
+// 	red = hexToRgb((e.target as HTMLInputElement).value)?.r as number
+// 	green = hexToRgb((e.target as HTMLInputElement).value)?.g as number
+// 	blue = hexToRgb((e.target as HTMLInputElement).value)?.b as number
+// 	settingsIcon.style.color = (e.target as HTMLInputElement).value
+// })
+
+// function saveSettings() {
+// 	//console.log("save", red, green, blue)
+// }
+
+// function resetDefault() {
+// 	if (confirm("Are you sure? All your changes will be lost.")) {
+// 		newColor.value = "#fafafa"
+// 		red = hexToRgb(newColor.value)?.r as number
+// 		green = hexToRgb(newColor.value)?.g as number
+// 		blue = hexToRgb(newColor.value)?.b as number
+// 		settingsIcon.style.color = newColor.value
+
+// 		pathSize = 1
+// 		pathSizeElement.value = pathSize.toString()
+// 		badgePathSize.innerText = pathSize.toString()
+
+// 		sensitivity = 5
+// 		sensitivityRange.value = sensitivity.toString()
+// 		badgeSensitivity.innerText = sensitivity.toString()
+
+// 		M.toast({
+// 			html: "Settings reset to default",
+// 			classes: "green rounded",
+// 			displayLength: 1000,
+// 		})
+// 	} else {
+// 		M.toast({
+// 			html: "Your settings are safe.",
+// 			classes: "blue rounded",
+// 			displayLength: 1000,
+// 		})
+// 	}
+// }
+
+// function resetAll() {
+// 	if (
+// 		confirm(
+// 			"Are you sure? All your changes will be lost. This will reload app."
+// 		)
+// 	) {
+// 		localStorage.clear()
+// 		location.reload()
+// 	} else {
+// 		M.toast({
+// 			html: "Your settings are safe.",
+// 			classes: "blue rounded",
+// 			displayLength: 1000,
+// 		})
+// 	}
+// }
+
+// sensitivity controller
+let sensitivity = 5
+const sensitivityRange = document.getElementById("sensitivity") as HTMLInputElement
+const badgeSensitivity = document.getElementById("badge-sensitivity") as HTMLSpanElement
+sensitivityRange.value = sensitivity.toString()
+badgeSensitivity.innerText = sensitivity.toString()
+
+sensitivityRange.addEventListener("input", (e) => {
+	sensitivity = (e.target as HTMLInputElement).value as unknown as number
+	badgeSensitivity.innerText = sensitivity.toString()
+})
+
+//to compare two color values
+let pixel: ImageData
+function compareColorValues(x: number, y: number, currentPathColor: string) {
+	pixel = context.getImageData(x, y, 1, 1)
+	if (
+		//comparing a range of colours
+		pixel.data[0] >= red - sensitivity &&
+		pixel.data[0] <= red + sensitivity &&
+		pixel.data[1] >= green - sensitivity &&
+		pixel.data[1] <= green + sensitivity &&
+		pixel.data[2] >= blue - sensitivity &&
+		pixel.data[2] <= blue + sensitivity
+	)
+		return true
+	//support to ignore previously drawn paths
+	else if (
+		pixel.data[0] === hexToRgb(currentPathColor)?.r &&
+		pixel.data[1] === hexToRgb(currentPathColor)?.g &&
+		pixel.data[2] === hexToRgb(currentPathColor)?.b
+	)
+		return true
+	//support for pure blue and pure green for source and dest markers
+	else if (pixel.data[0] == 0 && pixel.data[1] >= 250 && pixel.data[2] == 0)
+		return true
+	else if (pixel.data[0] == 0 && pixel.data[1] == 0 && pixel.data[2] >= 250)
+		return true
+	//support for pure red for stop markers
+	else if (pixel.data[0] >= 255 && pixel.data[1] == 0 && pixel.data[2] == 0)
+		return true
+	else return false
+}
+
+
+
+function resetBfsManagerStates() {
+	//reseting intermediate states during bfs
+	predFromSource.clear()
+	predFromDest.clear()
+	sourceQueue = new Array()
+	destQueue = new Array()
+	sourceVisited = new Array(vertex).fill(false)
+	destVisited = new Array(vertex).fill(false)
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+////////////////////////complete messed up algorithm code ends here/////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// theming starts from here
+
+
+
 
 // Complete themeing (Material You)
 
