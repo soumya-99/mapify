@@ -3,11 +3,12 @@ import "@lottiefiles/lottie-player";
 import "materialize-css/dist/css/materialize.min.css";
 import "./css/material-icons.css";
 import "./css/style.css";
-import { easterEgg, materialBlue, materialColorful, materialGreen, materialPurple, materialRed, materialTeal, materialYellow, switchTheme } from "./api/theme";
-//import { bfsManager, colorImagePixels, compareColorValues, findVertexAtCoordinate } from "./api/algorithm";
+import { easterEgg, materialBlue, materialColorful, materialGreen, materialPurple, materialRed, materialTeal, materialYellow, switchTheme, materialYouPathColor } from "./api/theme";
 import { set_box_dimensions, set_maxX, findVertexAtCoordinate, findCoordinateOfVertex, hexToRgb } from "./api/utils";
-import { set_context, colorImagePixels, reDrawSrcDest, reDrawStops, set_universalSources, set_universalDests,
-    set_copyOfWaypoints } from "./api/utils";
+import {
+	set_context, colorImagePixels, reDrawSrcDest, reDrawStops, set_universalSources, set_universalDests,
+	set_copyOfWaypoints
+} from "./api/utils";
 
 // buttons
 const srcButton = document.getElementById("source") as HTMLAnchorElement
@@ -42,7 +43,6 @@ let universalSources: number[] = new Array() //stores values until map is reload
 let universalDests: number[] = new Array()
 let univarsalWaypoints: number[] = new Array()
 let waypoints: number[] = new Array() //array for multiple stops or way points
-let materialYouPathColor = "ff0000"
 
 let box_dimensions = 2 //segment dimension
 let maxX = canvas.width / box_dimensions //image loading needs to be done before this
@@ -68,6 +68,7 @@ inputImage.addEventListener("change", (e) => {
 	reader.onload = (event) => {
 		var image = new Image()
 		image.onload = () => {
+			resetStates()
 			canvas.width = image.width
 			canvas.height = image.height
 
@@ -89,7 +90,6 @@ inputImage.addEventListener("change", (e) => {
 			vertex = maxX * maxY
 			context.drawImage(image, 0, 0, image.width, image.height)
 		}
-		resetStates()
 		customInputEnabled = true
 		universalPaths = new Array() //universalPaths is to be cleared separately for swap map button
 
@@ -106,6 +106,7 @@ const drawMap = () => {
 }
 
 window.onload = () => {
+	resetStates() // sussy baka
 	//loading image for the first time
 	drawMap()
 	localStorage.dark === "true"
@@ -121,12 +122,11 @@ function pick(event: MouseEvent) {
 	var rect = canvas.getBoundingClientRect() // get the canvas' bounding rectangle
 	let mx = event.clientX - rect.left // get the mouse's x coordinate
 	let my = event.clientY - rect.top // get the mouse's y coordinate
+	//passing context to utils
+	set_context(context)
 	if (compareColorValues(mx, my, materialYouPathColor) === false) {
 		return //don't let add src or dest outside paths
 	}
-
-	//passing context to utils
-	set_context(context)
 
 	let hotCell = findVertexAtCoordinate(mx, my)
 
@@ -196,7 +196,6 @@ resetButton.onclick = () => {
 	clickAudio.play()
 	if (confirm("Are you sure? Do you really want to clear the map?")) {
 		isReset = true
-		// let img = document.getElementById("map-image")
 		let tempCustomImage = document.getElementById("map-image") as HTMLImageElement
 		let newImage = document.getElementById("mapSelect") as HTMLSelectElement
 
@@ -355,7 +354,6 @@ canvas.addEventListener(
 	false
 )
 
-
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -364,13 +362,13 @@ canvas.addEventListener(
 //These needs to be global to preseve states within function calls
 let predFromSource: Map<number, number> = new Map()
 let predFromDest: Map<number, number> = new Map()
-let sourceQueue = new Array()
-let destQueue = new Array()
-let sourceVisited = new Array(vertex).fill(false)
-let destVisited = new Array(vertex).fill(false)
-let universalPaths = new Array() //not resets until reset button or swap map pressed
+let sourceQueue: number[] = new Array()
+let destQueue: number[] = new Array()
+let sourceVisited: boolean[] = new Array(vertex).fill(false)
+let destVisited: boolean[] = new Array(vertex).fill(false)
+let universalPaths: number[] = new Array() //not resets until reset button or swap map pressed
 let pathColor: string //to support materialYou path color
-let copyOfWaypoints = new Array() //copy to manage realtime pathSize update for waypoints
+let copyOfWaypoints: number[] = new Array() //copy to manage realtime pathSize update for waypoints
 
 function bfsManager(source: number, destination: number, waypoints: number[]) {
 	//handles the case for multiple way points
@@ -440,7 +438,7 @@ function sourceBfs() {
 	if (sourceQueue.length === 0) return 0
 
 	let x = sourceQueue.shift() // already popped front
-	x = Math.trunc(x)
+	x = Math.trunc(<number>x)
 	let coords = findCoordinateOfVertex(x)
 	let boxPixlX = coords[0]
 	let boxPixlY = coords[1]
@@ -464,7 +462,7 @@ function destBfs() {
 	if (destQueue.length === 0) return 0
 
 	let x = destQueue.shift() // already popped front
-	x = Math.trunc(x)
+	x = Math.trunc(<number>x)
 	let coords = findCoordinateOfVertex(x)
 	let boxPixlX = coords[0]
 	let boxPixlY = coords[1]
@@ -574,7 +572,7 @@ function getPath(sourceFlag: number, destFlag: number) {
 	return temp
 }
 
-function highLightPath() {
+export function highLightPath() {
 	let pathColor = materialYouPathColor
 	const pathWidth = pathSize // removed the parseInt
 
@@ -594,6 +592,7 @@ function highLightPath() {
 	}
 }
 
+// Settings Modal Functions
 // path size
 const pathSizeElement = document.getElementById("path-size") as HTMLInputElement
 const badgePathSize = document.getElementById("badge-pathSize") as HTMLSpanElement
@@ -603,7 +602,7 @@ pathSizeElement.value = pathSize.toString()
 badgePathSize.innerHTML = pathSize.toString()
 
 pathSizeElement.addEventListener("input", (e) => {
-	pathSize = (e.target as HTMLInputElement).value as unknown as number
+	pathSize = <number>+(e.target as HTMLInputElement).value
 	badgePathSize.innerHTML = pathSize.toString()
 	redrawPath() //reloads the image and redraws the path with new pathsize
 })
@@ -616,7 +615,6 @@ function redrawPath() {
 	set_universalSources(universalSources)
 	set_universalDests(universalDests)
 	set_copyOfWaypoints(copyOfWaypoints)
-
 
 	//clear the image and then in onload redraw the src and dest and.... path
 	let img = document.getElementById("map-image") as HTMLImageElement
@@ -651,76 +649,78 @@ function redrawPath() {
 	}
 }
 
-////////////////////////utility functions/////////////////
-
-
-
-
 // custom color (color picker)
 const newColor = document.getElementById("custom-color") as HTMLInputElement
 let red = hexToRgb(newColor.value)?.r as number
 let green = hexToRgb(newColor.value)?.g as number
 let blue = hexToRgb(newColor.value)?.b as number
-//const settingsIcon = document.getElementById("settings-icon") as HTMLElement
 
-// newColor.addEventListener("input", (e) => {
-// 	newColor.value = (e.target as HTMLInputElement).value
-// 	red = hexToRgb((e.target as HTMLInputElement).value)?.r as number
-// 	green = hexToRgb((e.target as HTMLInputElement).value)?.g as number
-// 	blue = hexToRgb((e.target as HTMLInputElement).value)?.b as number
-// 	settingsIcon.style.color = (e.target as HTMLInputElement).value
-// })
+const settingsIcon = document.getElementById("settings-icon") as HTMLElement
 
-// function saveSettings() {
-// 	//console.log("save", red, green, blue)
-// }
+newColor.addEventListener("input", (e) => {
+	newColor.value = (e.target as HTMLInputElement).value
+	red = hexToRgb((e.target as HTMLInputElement).value)?.r as number
+	green = hexToRgb((e.target as HTMLInputElement).value)?.g as number
+	blue = hexToRgb((e.target as HTMLInputElement).value)?.b as number
+	settingsIcon.style.color = (e.target as HTMLInputElement).value
+})
 
-// function resetDefault() {
-// 	if (confirm("Are you sure? All your changes will be lost.")) {
-// 		newColor.value = "#fafafa"
-// 		red = hexToRgb(newColor.value)?.r as number
-// 		green = hexToRgb(newColor.value)?.g as number
-// 		blue = hexToRgb(newColor.value)?.b as number
-// 		settingsIcon.style.color = newColor.value
+const saveSettingsButton = document.getElementById("save-settings") as HTMLAnchorElement
+function saveSettings() {
+	//console.log("save", red, green, blue)
+}
+saveSettingsButton.onclick = saveSettings
 
-// 		pathSize = 1
-// 		pathSizeElement.value = pathSize.toString()
-// 		badgePathSize.innerText = pathSize.toString()
+const resetDefaultButton = document.getElementById("reset-default") as HTMLAnchorElement
+function resetDefault() {
+	if (confirm("Are you sure? All your changes will be lost.")) {
+		newColor.value = "#fafafa"
+		red = hexToRgb(newColor.value)?.r as number
+		green = hexToRgb(newColor.value)?.g as number
+		blue = hexToRgb(newColor.value)?.b as number
+		settingsIcon.style.color = newColor.value
 
-// 		sensitivity = 5
-// 		sensitivityRange.value = sensitivity.toString()
-// 		badgeSensitivity.innerText = sensitivity.toString()
+		pathSize = 1
+		pathSizeElement.value = pathSize.toString()
+		badgePathSize.innerText = pathSize.toString()
 
-// 		M.toast({
-// 			html: "Settings reset to default",
-// 			classes: "green rounded",
-// 			displayLength: 1000,
-// 		})
-// 	} else {
-// 		M.toast({
-// 			html: "Your settings are safe.",
-// 			classes: "blue rounded",
-// 			displayLength: 1000,
-// 		})
-// 	}
-// }
+		sensitivity = 5
+		sensitivityRange.value = sensitivity.toString()
+		badgeSensitivity.innerText = sensitivity.toString()
 
-// function resetAll() {
-// 	if (
-// 		confirm(
-// 			"Are you sure? All your changes will be lost. This will reload app."
-// 		)
-// 	) {
-// 		localStorage.clear()
-// 		location.reload()
-// 	} else {
-// 		M.toast({
-// 			html: "Your settings are safe.",
-// 			classes: "blue rounded",
-// 			displayLength: 1000,
-// 		})
-// 	}
-// }
+		M.toast({
+			html: "Settings reset to default",
+			classes: "green rounded",
+			displayLength: 1000,
+		})
+	} else {
+		M.toast({
+			html: "Your settings are safe.",
+			classes: "blue rounded",
+			displayLength: 1000,
+		})
+	}
+}
+resetDefaultButton.onclick = resetDefault
+
+const resetAllButton = document.getElementById("reset-all") as HTMLAnchorElement
+function resetAll() {
+	if (
+		confirm(
+			"Are you sure? All your changes will be lost. This will reload app."
+		)
+	) {
+		localStorage.clear()
+		location.reload()
+	} else {
+		M.toast({
+			html: "Your settings are safe.",
+			classes: "blue rounded",
+			displayLength: 1000,
+		})
+	}
+}
+resetAllButton.onclick = resetAll
 
 // sensitivity controller
 let sensitivity = 5
@@ -766,8 +766,6 @@ function compareColorValues(x: number, y: number, currentPathColor: string) {
 	else return false
 }
 
-
-
 function resetBfsManagerStates() {
 	//reseting intermediate states during bfs
 	predFromSource.clear()
@@ -778,19 +776,13 @@ function resetBfsManagerStates() {
 	destVisited = new Array(vertex).fill(false)
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 ////////////////////////complete messed up algorithm code ends here/////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
 //////////////////////////////////////////////////////////////////////////////////
 // theming starts from here
-
-
 
 
 // Complete themeing (Material You)

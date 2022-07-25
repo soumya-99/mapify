@@ -1,5 +1,5 @@
 import { argbFromHex, themeFromSourceColor, applyTheme } from "@material/material-color-utilities"
-import { highLightPath } from "./algorithm"
+import { highLightPath } from "../main"
 
 const floatingActionButton = document.querySelector(".fixed-action-btn") as HTMLDivElement
 const floatingButton = document.getElementById("floating-action") as HTMLAnchorElement

@@ -129,9 +129,9 @@
       </div>
     </div>
     <div class="modal-footer">
-      <a onclick="resetAll()" class="modal-close waves-effect waves-red btn-flat">Reset All</a>
-      <a onclick="resetDefault()" class="modal-close waves-effect waves-orange btn-flat">Reset Settings</a>
-      <a onclick="saveSettings()" class="modal-close waves-effect waves-green btn-flat">Save All</a>
+      <a id="reset-all" class="modal-close waves-effect waves-red btn-flat">Reset All</a>
+      <a id="reset-default" class="modal-close waves-effect waves-orange btn-flat">Reset Settings</a>
+      <a id="save-settings" class="modal-close waves-effect waves-green btn-flat">Save All</a>
     </div>
   </div>
 
@@ -140,13 +140,15 @@
     <div class="modal-content">
       <h4>Material You Limitless</h4>
       <div class="divider"></div>
-      <h6>Your own Mapify with Material Design 3 (Material You)!</h6>
+      <h6>Your own Mapify with Material Design 3 (Dynamic Theming)!</h6>
       <div class="row">
         <div class="col s7">
           <ul class="helpText">
             <li>
               <span class="src">Choose Any Color</span>
-              <input id="color-you" type="color" value="#fafafa">
+              <div>
+                <input id="color-you" type="color" value="#fafafa">
+              </div>
             </li>
             <br>
             <li>
